@@ -6,4 +6,4 @@ Features:
 - Split a merged texture into individual grayscale textures for each RGBA channel.
 - Simplify texture management tasks within Unity projects.
 
-![Plugin window](https://drive.google.com/file/d/1MFpoIvfrurVsLIhSC_PdCaUa9WBe0hmI/view?usp=sharing)
+![Plugin window](https://github.com/Xpartz/UnityChannelPacker-/blob/main/Screenshot_1.png)
