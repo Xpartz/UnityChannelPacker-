@@ -16,3 +16,9 @@ Features:
 
 Add the script to any of the Editor folders. After that, go to the Windows menu and find Texture Packer.
 ![Plugin](https://github.com/Xpartz/UnityChannelPacker-/blob/main/Screenshot_2.png)
+
+#Details
+
+When merging channels, if the texture slot is empty, the channel will be filled with 0.
+
+When splitting channels, if the texture channel is empty, the plugin will not create a texture for that channel.
