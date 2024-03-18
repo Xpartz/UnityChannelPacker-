@@ -29,7 +29,7 @@ public class TexturePacker : EditorWindow
             MergeTextures();
         }
 
-      
+
         GUILayout.Label("Merged Texture", EditorStyles.boldLabel);
         mergedTexture = (Texture2D)EditorGUILayout.ObjectField("Merged Texture:", mergedTexture, typeof(Texture2D), false);
 
@@ -89,43 +89,78 @@ public class TexturePacker : EditorWindow
         int width = sourceTexture.width;
         int height = sourceTexture.height;
 
-        Texture2D textureR = new Texture2D(width, height, TextureFormat.RGBA32, false);
-        Texture2D textureG = new Texture2D(width, height, TextureFormat.RGBA32, false);
-        Texture2D textureB = new Texture2D(width, height, TextureFormat.RGBA32, false);
-        Texture2D textureA = new Texture2D(width, height, TextureFormat.RGBA32, false);
-
-        for (int x = 0; x < width; x++)
+        if (textureR != null)
         {
-            for (int y = 0; y < height; y++)
+            Texture2D textureR = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            for (int x = 0; x < width; x++)
             {
-                Color pixelColor = sourceTexture.GetPixel(x, y);
-                textureR.SetPixel(x, y, new Color(pixelColor.r, pixelColor.r, pixelColor.r));
-                textureG.SetPixel(x, y, new Color(pixelColor.g, pixelColor.g, pixelColor.g));
-                textureB.SetPixel(x, y, new Color(pixelColor.b, pixelColor.b, pixelColor.b));
-                textureA.SetPixel(x, y, new Color(pixelColor.a, pixelColor.a, pixelColor.a));
+                for (int y = 0; y < height; y++)
+                {
+                    Color pixelColor = sourceTexture.GetPixel(x, y);
+                    textureR.SetPixel(x, y, new Color(pixelColor.r, pixelColor.r, pixelColor.r));
+                }
             }
+            textureR.Apply();
+            SaveTextureAsPNG(textureR, "R");
         }
 
-        textureR.Apply();
-        textureG.Apply();
-        textureB.Apply();
-        textureA.Apply();
+        if (textureG != null)
+        {
+            Texture2D textureG = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    Color pixelColor = sourceTexture.GetPixel(x, y);
+                    textureG.SetPixel(x, y, new Color(pixelColor.g, pixelColor.g, pixelColor.g));
+                }
+            }
+            textureG.Apply();
+            SaveTextureAsPNG(textureG, "G");
+        }
 
-        SaveTextureAsPNG(textureR, "R_Channel");
-        SaveTextureAsPNG(textureG, "G_Channel");
-        SaveTextureAsPNG(textureB, "B_Channel");
-        SaveTextureAsPNG(textureA, "A_Channel");
+        if (textureB != null)
+        {
+            Texture2D textureB = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    Color pixelColor = sourceTexture.GetPixel(x, y);
+                    textureB.SetPixel(x, y, new Color(pixelColor.b, pixelColor.b, pixelColor.b));
+                }
+            }
+            textureB.Apply();
+            SaveTextureAsPNG(textureB, "B");
+        }
+
+        if (textureA != null)
+        {
+            Texture2D textureA = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    Color pixelColor = sourceTexture.GetPixel(x, y);
+                    textureA.SetPixel(x, y, new Color(pixelColor.a, pixelColor.a, pixelColor.a));
+                }
+            }
+            textureA.Apply();
+            SaveTextureAsPNG(textureA, "A");
+        }
     }
 
-    void SaveTextureAsPNG(Texture2D texture, string name)
+    void SaveTextureAsPNG(Texture2D texture, string suffix)
     {
         byte[] bytes = texture.EncodeToPNG();
-        var path = EditorUtility.SaveFilePanelInProject("Save Texture", name, "png", "Please enter a file name to save the texture to");
+        // Получаем имя оригинальной текстуры
+        string originalName = mergedTexture.name;
+        var path = EditorUtility.SaveFilePanelInProject("Save Texture", $"{originalName}_{suffix}", "png", "Please enter a file name to save the texture to");
         if (path.Length != 0)
         {
             System.IO.File.WriteAllBytes(path, bytes);
             AssetDatabase.Refresh();
-           
         }
     }
+
 }
