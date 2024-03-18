@@ -5,3 +5,5 @@ Features:
 - Merge multiple textures into a single RGBA texture.
 - Split a merged texture into individual grayscale textures for each RGBA channel.
 - Simplify texture management tasks within Unity projects.
+
+![Plugin window](https://drive.google.com/file/d/1MFpoIvfrurVsLIhSC_PdCaUa9WBe0hmI/view?usp=sharing)
