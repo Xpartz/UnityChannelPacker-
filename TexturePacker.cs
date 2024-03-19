@@ -9,6 +9,19 @@ public class TexturePacker : EditorWindow
     private Texture2D textureA;
     private Texture2D mergedTexture;
 
+
+    private Texture2D previewTextureR;
+    private Texture2D previewTextureG;
+    private Texture2D previewTextureB;
+    private Texture2D previewTextureA;
+
+
+    private bool hasRedChannel = false;
+    private bool hasGreenChannel = false;
+    private bool hasBlueChannel = false;
+    private bool hasAlphaChannel = false;
+
+
     [MenuItem("Window/Texture Packer")]
     public static void ShowWindow()
     {
@@ -29,29 +42,52 @@ public class TexturePacker : EditorWindow
             MergeTextures();
         }
 
+        
 
         GUILayout.Label("Merged Texture", EditorStyles.boldLabel);
-        mergedTexture = (Texture2D)EditorGUILayout.ObjectField("Merged Texture:", mergedTexture, typeof(Texture2D), false);
+        var newMergedTexture = (Texture2D)EditorGUILayout.ObjectField("Merged Texture:", mergedTexture, typeof(Texture2D), false);
 
-        if (GUILayout.Button("Split"))
+        if (mergedTexture != null)
         {
-            if (mergedTexture != null)
+            if (GUILayout.Button("Split"))
             {
                 SplitTexture(mergedTexture);
             }
-            else
-            {
-                Debug.LogWarning("No merged texture selected!");
-            }
+        }
+        if (newMergedTexture != mergedTexture)
+        {
+            mergedTexture = newMergedTexture;
+            GeneratePreviewTextures();
+        }
+
+        if (mergedTexture != null)
+        {
+            GUILayout.Label("Preview Textures", EditorStyles.boldLabel);
+
+            GUILayout.BeginHorizontal();
+
+            if (previewTextureR) GUILayout.Label(previewTextureR, GUILayout.Width(50), GUILayout.Height(50));
+            if (previewTextureG) GUILayout.Label(previewTextureG, GUILayout.Width(50), GUILayout.Height(50));
+            if (previewTextureB) GUILayout.Label(previewTextureB, GUILayout.Width(50), GUILayout.Height(50));
+            if (previewTextureA) GUILayout.Label(previewTextureA, GUILayout.Width(50), GUILayout.Height(50));
+
+
+            GUILayout.EndHorizontal();
         }
     }
 
+
     void MergeTextures()
     {
-        int width = textureR ? textureR.width : textureG ? textureG.width : textureB ? textureB.width : textureA.width;
-        int height = textureR ? textureR.height : textureG ? textureG.height : textureB ? textureB.height : textureA.height;
+        SetTextureReadable(textureR, true);
+        SetTextureReadable(textureG, true);
+        SetTextureReadable(textureB, true);
+        SetTextureReadable(textureA, true);
+        int width = textureR ? textureR.width : textureG ? textureG.width : textureB ? textureB.width : 0;
+        int height = textureR ? textureR.height : textureG ? textureG.height : textureB ? textureB.height : 0;
+        TextureFormat format = textureA != null ? TextureFormat.RGBA32 : TextureFormat.RGB24;
 
-        Texture2D mergedTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        mergedTexture = new Texture2D(width, height, format, false);
 
         for (int x = 0; x < width; x++)
         {
@@ -60,7 +96,7 @@ public class TexturePacker : EditorWindow
                 float r = textureR ? textureR.GetPixel(x, y).r : 0;
                 float g = textureG ? textureG.GetPixel(x, y).g : 0;
                 float b = textureB ? textureB.GetPixel(x, y).b : 0;
-                float a = textureA ? textureA.GetPixel(x, y).a : 0;
+                float a = textureA != null ? textureA.GetPixel(x, y).grayscale : 1.0f;
 
                 mergedTexture.SetPixel(x, y, new Color(r, g, b, a));
             }
@@ -82,14 +118,24 @@ public class TexturePacker : EditorWindow
                 importer.SaveAndReimport();
             }
         }
+        mergedTexture = null;
+        SetTextureReadable(textureR, false);
+        SetTextureReadable(textureG, false);
+        SetTextureReadable(textureB, false);
+        SetTextureReadable(textureA, false);
     }
+
+
+
 
     void SplitTexture(Texture2D sourceTexture)
     {
         int width = sourceTexture.width;
         int height = sourceTexture.height;
 
-        if (textureR != null)
+        SetTextureReadable(mergedTexture, true);
+
+        if (hasRedChannel)
         {
             Texture2D textureR = new Texture2D(width, height, TextureFormat.RGBA32, false);
             for (int x = 0; x < width; x++)
@@ -101,10 +147,10 @@ public class TexturePacker : EditorWindow
                 }
             }
             textureR.Apply();
-            SaveTextureAsPNG(textureR, "R");
+            SaveTextureAsPNG(textureR, $"{sourceTexture.name}_R.png");
         }
 
-        if (textureG != null)
+        if (hasGreenChannel)
         {
             Texture2D textureG = new Texture2D(width, height, TextureFormat.RGBA32, false);
             for (int x = 0; x < width; x++)
@@ -116,10 +162,10 @@ public class TexturePacker : EditorWindow
                 }
             }
             textureG.Apply();
-            SaveTextureAsPNG(textureG, "G");
+            SaveTextureAsPNG(textureG, $"{sourceTexture.name}_G.png");
         }
 
-        if (textureB != null)
+        if (hasBlueChannel)
         {
             Texture2D textureB = new Texture2D(width, height, TextureFormat.RGBA32, false);
             for (int x = 0; x < width; x++)
@@ -131,10 +177,10 @@ public class TexturePacker : EditorWindow
                 }
             }
             textureB.Apply();
-            SaveTextureAsPNG(textureB, "B");
+            SaveTextureAsPNG(textureB, $"{sourceTexture.name}_B.png");
         }
 
-        if (textureA != null)
+        if (hasAlphaChannel)
         {
             Texture2D textureA = new Texture2D(width, height, TextureFormat.RGBA32, false);
             for (int x = 0; x < width; x++)
@@ -146,16 +192,17 @@ public class TexturePacker : EditorWindow
                 }
             }
             textureA.Apply();
-            SaveTextureAsPNG(textureA, "A");
+            SaveTextureAsPNG(textureA, $"{sourceTexture.name}_A.png");
         }
+
+        SetTextureReadable(mergedTexture, false);
     }
 
-    void SaveTextureAsPNG(Texture2D texture, string suffix)
+
+    void SaveTextureAsPNG(Texture2D texture, string name)
     {
         byte[] bytes = texture.EncodeToPNG();
-        // Получаем имя оригинальной текстуры
-        string originalName = mergedTexture.name;
-        var path = EditorUtility.SaveFilePanelInProject("Save Texture", $"{originalName}_{suffix}", "png", "Please enter a file name to save the texture to");
+        var path = EditorUtility.SaveFilePanelInProject("Save Texture", name, "png", "Please enter a file name to save the texture to");
         if (path.Length != 0)
         {
             System.IO.File.WriteAllBytes(path, bytes);
@@ -163,4 +210,82 @@ public class TexturePacker : EditorWindow
         }
     }
 
+
+    void GeneratePreviewTextures()
+    {
+        if (mergedTexture == null)
+        {
+            previewTextureR = null;
+            previewTextureG = null;
+            previewTextureB = null;
+            previewTextureA = null;
+            return;
+        }
+        SetTextureReadable(mergedTexture, true);
+        int width = mergedTexture.width;
+        int height = mergedTexture.height;
+
+        previewTextureR = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        previewTextureG = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        previewTextureB = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        previewTextureA = new Texture2D(width, height, TextureFormat.RGBA32, false);
+
+        hasRedChannel = false;
+        hasGreenChannel = false;
+        hasBlueChannel = false;
+        hasAlphaChannel = false;
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Color pixelColor = mergedTexture.GetPixel(x, y);
+
+                previewTextureR.SetPixel(x, y, new Color(pixelColor.r, 0, 0, pixelColor.r > 0 ? 1 : 1));
+                if (pixelColor.r > 0) hasRedChannel = true;
+
+                previewTextureG.SetPixel(x, y, new Color(0, pixelColor.g, 0, pixelColor.g > 0 ? 1 : 1));
+                if (pixelColor.g > 0) hasGreenChannel = true;
+
+                previewTextureB.SetPixel(x, y, new Color(0, 0, pixelColor.b, pixelColor.b > 0 ? 1 : 1));
+                if (pixelColor.b > 0) hasBlueChannel = true;
+
+                
+                previewTextureA.SetPixel(x, y, new Color(1, 1, 1, pixelColor.a));
+                if (pixelColor.a < 1) hasAlphaChannel = true;
+                
+
+
+            }
+        }
+
+        if (hasRedChannel) previewTextureR.Apply(); else previewTextureR = null;
+        if (hasGreenChannel) previewTextureG.Apply(); else previewTextureG = null;
+        if (hasBlueChannel) previewTextureB.Apply(); else previewTextureB = null;
+        if (hasAlphaChannel) previewTextureA.Apply(); else previewTextureA = null;
+
+        SetTextureReadable(mergedTexture, false);
+
+    }
+
+    private bool SetTextureReadable(Texture2D texture, bool readable)
+    {
+        if (texture == null) return false;
+
+        string assetPath = AssetDatabase.GetAssetPath(texture);
+        var importer = (TextureImporter)TextureImporter.GetAtPath(assetPath);
+
+        if (importer != null && importer.isReadable != readable)
+        {
+            importer.isReadable = readable;
+            importer.SaveAndReimport();
+            return true;
+        }
+        return false;
+    }
+
+
+
+
 }
+
