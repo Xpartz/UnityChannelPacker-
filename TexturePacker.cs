@@ -32,10 +32,10 @@ public class TexturePacker : EditorWindow
     void OnGUI()
     {
         GUILayout.Label("Source Textures", EditorStyles.boldLabel);
-        textureR = (Texture2D)EditorGUILayout.ObjectField("Texture R:", textureR, typeof(Texture2D), false);
-        textureG = (Texture2D)EditorGUILayout.ObjectField("Texture G:", textureG, typeof(Texture2D), false);
-        textureB = (Texture2D)EditorGUILayout.ObjectField("Texture B:", textureB, typeof(Texture2D), false);
-        textureA = (Texture2D)EditorGUILayout.ObjectField("Texture A:", textureA, typeof(Texture2D), false);
+        textureR = (Texture2D)EditorGUILayout.ObjectField("Channel R:", textureR, typeof(Texture2D), false);
+        textureG = (Texture2D)EditorGUILayout.ObjectField("Channel G:", textureG, typeof(Texture2D), false);
+        textureB = (Texture2D)EditorGUILayout.ObjectField("Channel B:", textureB, typeof(Texture2D), false);
+        textureA = (Texture2D)EditorGUILayout.ObjectField("Channel A:", textureA, typeof(Texture2D), false);
 
         if (GUILayout.Button("Merge"))
         {
@@ -44,8 +44,8 @@ public class TexturePacker : EditorWindow
 
         
 
-        GUILayout.Label("Merged Texture", EditorStyles.boldLabel);
-        var newMergedTexture = (Texture2D)EditorGUILayout.ObjectField("Merged Texture:", mergedTexture, typeof(Texture2D), false);
+        GUILayout.Label("RGB Texture", EditorStyles.boldLabel);
+        var newMergedTexture = (Texture2D)EditorGUILayout.ObjectField("RGB Texture:", mergedTexture, typeof(Texture2D), false);
 
         if (mergedTexture != null)
         {
@@ -62,7 +62,7 @@ public class TexturePacker : EditorWindow
 
         if (mergedTexture != null)
         {
-            GUILayout.Label("Preview Textures", EditorStyles.boldLabel);
+            GUILayout.Label("Preview channels", EditorStyles.boldLabel);
 
             GUILayout.BeginHorizontal();
 
